@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Echoes of Cold Rain — A 2D Noir Revenge Story</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="game-container">
+    <!-- Visual Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Atmospheric Overlays -->
+    <div class="vignette-overlay"></div>
+    <div class="noise-overlay"></div>
+    <div id="slowmo-vignette"></div>
+
+    <!-- Cinematic Letterboxing -->
+    <div class="letterbox-top"></div>
+    <div class="letterbox-bottom"></div>
+
+    <!-- Top & Bottom In-Game HUD -->
+    <div id="hud">
+      <div class="hud-top">
+        <!-- Player Status Card -->
+        <div class="player-status-card">
+          <div class="char-title">Daniel Ward &bull; Ex-Detective</div>
+          <div class="bar-container">
+            <div class="bar-label">
+              <span>VITALITY</span>
+              <span id="hp-text">100 / 100</span>
+            </div>
+            <div class="bar-track">
+              <div id="hp-fill" class="bar-fill-hp"></div>
+            </div>
+          </div>
+          <div class="bar-container" style="margin-bottom: 0;">
+            <div class="bar-label">
+              <span>GRIEF FOCUS [SHIFT]</span>
+              <span id="focus-text">100%</span>
+            </div>
+            <div class="bar-track">
+              <div id="focus-fill" class="bar-fill-focus"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Boss Health Bar HUD (Revealed on Boss Encounters) -->
+        <div id="boss-hud" class="boss-bar-hud">
+          <div class="boss-info">
+            <span id="boss-name" class="boss-name">Victor 'Viper' Vance</span>
+            <span id="boss-title" class="boss-title">The Lookout</span>
+          </div>
+          <div class="boss-track">
+            <div id="boss-fill" class="boss-fill"></div>
+          </div>
+        </div>
+
+        <!-- Mission Tracker -->
+        <div class="mission-tracker">
+          <div id="mission-stage" class="mission-stage">LEVEL 1 — THE SUBWAY METRO</div>
+          <div id="mission-objective" class="mission-objective">Track down Victor Vance</div>
+        </div>
+      </div>
+
+      <div class="hud-bottom">
+        <div></div> <!-- Spacer -->
+
+        <!-- Weapon & Ammo Display -->
+        <div class="weapon-card">
+          <div id="weapon-slot" class="weapon-slot-number">01</div>
+          <div class="weapon-details">
+            <span id="weapon-name" class="weapon-name">Service Revolver (.44)</span>
+            <div>
+              <span id="ammo-count" class="ammo-count">6</span>
+              <span id="ammo-reserve" class="ammo-reserve"> / &infin;</span>
+            </div>
+            <div id="reload-prompt" class="reload-prompt" style="display: none;">[R] RELOAD NEEDED</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Story Dialogue Modal Overlay -->
+    <div id="dialogue-modal">
+      <div id="dialogue-avatar" class="dialogue-avatar"></div>
+      <div class="dialogue-content">
+        <div id="dialogue-speaker" class="dialogue-speaker">Daniel Ward</div>
+        <div id="dialogue-text" class="dialogue-text"></div>
+        <div id="dialogue-hint" class="dialogue-hint">[SPACE / CLICK TO ADVANCE]</div>
+      </div>
+    </div>
+
+    <!-- Title Screen Modal -->
+    <div id="title-screen" class="screen-modal">
+      <h1 class="title-main">Echoes of Cold Rain</h1>
+      <p class="title-sub">A Noir Revenge Story in Three Acts</p>
+
+      <div class="story-intro-card">
+        Six months ago, a syndicate hit took everything from ex-detective <strong>Daniel Ward</strong>—his wife Clara and his 7-year-old daughter Lily. Left for dead with three hollow-points in his chest, Daniel survived with only one keepsake: <strong>Lily's music box</strong>.<br><br>
+        Three men orchestrated that bloody night. Each step deeper into the rain brings you closer to the architect, but each kill will test whether revenge can ever soothe a broken heart.
+      </div>
+
+      <div class="controls-grid">
+        <div><span class="key-badge">W A S D</span> Move Character</div>
+        <div><span class="key-badge">MOUSE</span> 360° Aim & Left Click Shoot</div>
+        <div><span class="key-badge">SPACE / R-CLICK</span> Dodge Roll (Invulnerability)</div>
+        <div><span class="key-badge">SHIFT</span> Focus Mode (Grief Bullet-Time)</div>
+        <div><span class="key-badge">1, 2, 3 / Q</span> Switch Weapon (Pistol / Shotgun / Rifle)</div>
+        <div><span class="key-badge">R</span> Reload Active Magazine</div>
+      </div>
+
+      <button id="btn-start-game" class="btn-primary">BEGIN HUNT</button>
+    </div>
+
+    <!-- Game Over Screen Modal -->
+    <div id="game-over-screen" class="screen-modal hidden">
+      <h1 class="title-main" style="color: #e63946;">Your Heart Stills</h1>
+      <p class="title-sub">"The rain keeps falling... and Lily's voice slips into silence."</p>
+
+      <div class="story-intro-card" style="border-left: 4px solid #e63946;">
+        You were overwhelmed by the syndicate. Take a breath, steady your aim, and make them pay.
+      </div>
+
+      <button id="btn-restart-checkpoint" class="btn-primary">TRY AGAIN (RESTART LEVEL)</button>
+    </div>
+
+    <!-- Victory & Epilogue Screen Modal -->
+    <div id="victory-screen" class="screen-modal hidden">
+      <h1 class="title-main" style="color: #4cc9f0;">The Rain Ceases</h1>
+      <p class="title-sub">Lily's Music Box Plays Its Final Tune</p>
+
+      <div class="story-intro-card" style="border-left: 4px solid #4cc9f0; max-width: 720px;">
+        Julian Mercer lies defeated, his syndicate dismantled and exposed. The blood feud is over.<br><br>
+        Looking out over the city as the morning sun breaks through six months of relentless clouds, Daniel places Lily's music box on the marble sill. The rage that kept him alive has burnt to ash, replaced by a quiet, warm remembrance.<br><br>
+        <em>"Goodbye, my sweet girl. Daddy is going to live now."</em>
+      </div>
+
+      <button id="btn-play-again" class="btn-primary">PLAY CAMPAIGN AGAIN</button>
+    </div>
+  </div>
+
+  <!-- Game Scripts -->
+  <script src="js/audio.js"></script>
+  <script src="js/story.js"></script>
+  <script src="js/entities.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
